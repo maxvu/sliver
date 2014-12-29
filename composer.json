@@ -21,7 +21,5 @@
             "Sliver\\": "src/"
         }
     },
-    "scripts": {
-        "sliver": "php bin/run-tests.php"
-    }
+    "bin": [ "bin/sliver.php" ]
 }
