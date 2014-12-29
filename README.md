@@ -24,17 +24,10 @@ A tiny PHP test framework
 * Use chainable methods `equals( $value )`, `fuzzyEquals( $value )`, `doesNotEqual( $value )`, `excepts()`, `doesNotExcept()`, `exceptsWithCode( $code )`, `takesLessThan( $seconds )` to apply conditions for the test's success.
 * Use Composer script `sliver` to run all tests in the current working directory, or provide it a directory to crawl.
 ```
-# composer sliver
+[user@host myapp]# composer sliver
 
-  Condition
-    [ OK ] equals() true on equality [0.00012s]
-    [ OK ] equals() false on inequality [0.00004s]
-    [ OK ] equals() false on fuzzy equality [0.00004s]
-    [ OK ] equals() false on exception [0.00009s]
-    [ OK ] fuzzyEquals() true on equality [0.00004s]
-    [ OK ] fuzzyEquals() false on inequality [0.00004s]
-    ...
-  21 of 21 tests passed in 1.00671s
-
+  SampleClass
+    [ OK ] one plus one is two [0.00007s]
+  1 of 1 tests passed in 0.00056s
 ```
 
