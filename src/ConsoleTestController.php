@@ -26,8 +26,8 @@
         $suiteTimer = (new Timer())->start();
         $suiteName = $suite->getName();
         echo "\n  {$suiteName}\n";
+        $suite->run();
         foreach ( $suite->getTests() as $test ) {
-          $test->run();
           $this->displayTest( $test );
           $numTestsRun++;
           if ( $test->passed() )

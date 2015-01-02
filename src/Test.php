@@ -63,14 +63,7 @@
     public function reset () {
       unset( $this->value );
       unset( $this->exception );
-      unset( $this->timer );
-      return $this;
-    }
-    
-    // Cull conditions as bool-returning closures.
-    
-    public function addCondition ( $condition ) {
-      $this->conditions[] = $condition->bindTo( $this );
+      $this->timer = new Timer();
       return $this;
     }
     

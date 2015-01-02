@@ -3,7 +3,20 @@
   class ConditionTest extends \Sliver\TestSuite {
     
     public function __construct () {
-    
+      
+      $this->test( 'all types applicable', function () {
+        $t = new \Sliver\Test( NULL, function () {});
+        $t
+          ->equals(1)
+          ->fuzzyEquals(1)
+          ->doesNotEqual(1)
+          ->doesNotExcept()
+          ->excepts()
+          ->exceptsWithCode(1)
+          ->takesLessThan(1);
+        return sizeof( $t->getConditions() ) === 7;
+      });
+      
       /*
         equals()
       */
@@ -195,8 +208,8 @@
       $this->test( 'takesLessThan() false on long method', function () {
       
         return (new \Sliver\Test( NULL, function () {
-          sleep(1);
-        }))->takesLessThan(1)->run()->passed();
+          usleep(10000);
+        }))->takesLessThan(0)->run()->passed();
       
       })->equals( FALSE );
       
