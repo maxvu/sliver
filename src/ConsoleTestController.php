@@ -40,8 +40,10 @@
         $this->totalTestsPassed += $numTestsPassed;
       }
       $totalTimer->stop();
-      echo "\n  {$this->totalTestsPassed} of {$this->totalTestsRun} "
-        . "tests passed in {$totalTimer}s\n";
+      if ( $this->totalTestsRun > 0 ) {
+        echo "\n  {$this->totalTestsPassed} of {$this->totalTestsRun} "
+          . "tests passed in {$totalTimer}s\n";
+      }
     }
     
     public function displaySuite ( TestSuite $suite ) {
@@ -50,8 +52,6 @@
       
       foreach ( $suite->getTests() as $test )
         $this->displayTest( $test );
-      
-      
     }
     
     public function displayTest ( Test $test ) {
@@ -77,6 +77,15 @@
         echo "      value: {$testVal}\n";
         echo "      exception: {$testCombinedEx}\n";
       }
+    }
+    
+    public function getSuites () {
+      return $this->suites;
+    }
+    
+    public function allPassed () {
+      return ( $this->totalTestsPassed == $this->totalTestsRun ) &&
+        $this->totalTestsRun > 0;
     }
   
   };
