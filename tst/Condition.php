@@ -1,6 +1,6 @@
 <?php
   
-  class Condition extends \Sliver\TestSuite {
+  class ConditionTest extends \Sliver\TestSuite {
     
     public function __construct () {
     

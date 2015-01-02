@@ -1,12 +1,15 @@
 #!/usr/bin/php
 <?php
+
+  $asSelf = __DIR__ . '/../vendor/autoload.php';
+  $asDependency = __DIR__ . '/../../../../vendor/autoload.php';
   
-  if ( is_readable( __DIR__ . '/../vendor/autoload.php' ) ) {
-    require( __DIR__ . '/../vendor/autoload.php' );
-  } else if ( is_readable( __DIR__ . ' /../../autoload.php' ) ) {
-    require( __DIR__ . ' /../../autoload.php' );
+  if ( is_readable( $asSelf ) ) {
+    require( $asSelf );
+  } else if ( is_readable( $asDependency ) ) {
+    require( $asDependency );
   } else {
-    echo "Couldn't find autoload.php";
+    echo "Couldn't find autoload.php\n";
     exit(1);
   }
   
