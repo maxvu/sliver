@@ -22,9 +22,9 @@ A tiny PHP test framework
   }
 ```
 * Use chainable methods `equals( $value )`, `fuzzyEquals( $value )`, `doesNotEqual( $value )`, `excepts()`, `doesNotExcept()`, `exceptsWithCode( $code )`, `takesLessThan( $seconds )` to apply conditions for the test's success.
-* Use Composer script `sliver` to run all tests in the current working directory, or provide it a directory to crawl as an argument.
+* Use Composer vendor binary 'sliver.php' to run all tests in the current working directory, or provide it a directory to crawl as an argument.
 ```
-[user@host myapp]# composer sliver
+[user@host myapp]# ./vendor/bin/sliver.php
 
   SampleClass
     [ OK ] one plus one is two [0.00007s]
