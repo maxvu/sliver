@@ -21,6 +21,8 @@
     public function run () {
       $totalTimer = (new Timer())->start();
       foreach ( $this->suites as $suite ) {
+        if ( $suite->getTests() === NULL )
+          continue;
         $numTestsRun = 0;
         $numTestsPassed = 0;
         $suiteTimer = (new Timer())->start();
