@@ -58,7 +58,7 @@
       $labelOk = "[ \e[0;32mOK\033[0m ]";
       $labelBad = "[ \e[1;31m!!\033[0m ]";
       $testName = $test->getName();
-      $testVal = serialize( $test->getValue() );
+      $testVal = $this->serialize( $test->getValue() );
       $testExCode = $test->getExceptionCode();
       $testExMsg = $test->getExceptionMessage();
       $testCombinedEx = $testExCode === NULL ?
@@ -86,6 +86,14 @@
     public function allPassed () {
       return ( $this->totalTestsPassed == $this->totalTestsRun ) &&
         $this->totalTestsRun > 0;
+    }
+    
+    public function serialize ( $value ) {
+      try {
+        return serialize( $value );
+      } catch ( \Exception $e ) {
+        return "unserializable " . get_class( $value );
+      }
     }
   
   };
