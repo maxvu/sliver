@@ -5,13 +5,15 @@
   class ConsoleTestController {
   
     protected $suites;
-    protected $numTestsRun;
-    protected $numTestsPassed;
+    protected $timer;
+    
+    protected $passed;
+    protected $failed;
     
     public function __construct () {
       $this->suites = array();
-      $this->totalTestsRun = 0;
-      $this->totalTestsPassed = 0;
+      $this->passed = array();
+      $this->failed = array();
     }
     
     public function addSuite( $suite ) {
@@ -19,83 +21,73 @@
     }
     
     public function run () {
-      $totalTimer = (new Timer())->start();
+      $controllerTimer = (new Timer())->start();
       foreach ( $this->suites as $suite ) {
-        if ( $suite->getTests() === NULL )
-          continue;
-        $numTestsRun = 0;
-        $numTestsPassed = 0;
-        $suiteTimer = (new Timer())->start();
-        $suiteName = $suite->getName();
-        echo "\n  {$suiteName}\n";
         $suite->run();
-        foreach ( $suite->getTests() as $test ) {
-          $this->displayTest( $test );
-          $numTestsRun++;
-          if ( $test->passed() )
-            $numTestsPassed++;
-        }
-        $suiteTimer->stop();
-        echo "  {$numTestsPassed} of {$numTestsRun} tests "
-          . "passed in {$suiteTimer}s\n";
-        $this->totalTestsRun += $numTestsRun;
-        $this->totalTestsPassed += $numTestsPassed;
+        $this->displaySuite( $suite );
       }
-      $totalTimer->stop();
-      if ( $this->totalTestsRun > 0 ) {
-        echo "\n  {$this->totalTestsPassed} of {$this->totalTestsRun} "
-          . "tests passed in {$totalTimer}s\n";
-      }
+      $controllerTimer->stop();
+      
+      $totalPass = sizeof( $this->passed );
+      $total = $totalPass + sizeof( $this->failed );
+      $totalTime = (string) $controllerTimer;
+      $nSuites = sizeof( $this->suites );
+      echo "\n";
+      echo "  $totalPass out of $total tests in $nSuites suites " .
+        "passed in {$totalTime}s\n\n";
+      return $this;
     }
     
-    public function displaySuite ( TestSuite $suite ) {
-      $suiteName = $suite->getName();
-      $suiteTime = (string) $suite->getTimer();
+    public function displaySuite ( $suite ) {
+      $passed = array();
+      $failed = array();
       
       foreach ( $suite->getTests() as $test )
-        $this->displayTest( $test );
-    }
-    
-    public function displayTest ( Test $test ) {
+        if ( $test->passed() ) {
+          $passed[] = $test;
+          $this->passed[] = $test;
+        } else {
+          $failed[] = $test;
+          $this->failed[] = $test;
+        }
+      
+      $suiteName = get_class( $suite );
+      $nPass = sizeof( $passed );
+      $nTotal = sizeof( $passed ) + sizeof( $failed );
+      $time = (string) $suite->getTimer();
       $labelOk = "[ \e[0;32mOK\033[0m ]";
       $labelBad = "[ \e[1;31m!!\033[0m ]";
-      $testName = $test->getName();
-      $testVal = $this->serialize( $test->getValue() );
-      $testExCode = $test->getExceptionCode();
-      $testExMsg = $test->getExceptionMessage();
-      $testCombinedEx = $testExCode === NULL ?
-        '(none)' : "{$testExMsg} ({$testExCode})";
-      $testTime = (string) $test->getTimer();
-      
-      if ( $test->passed() ) {
-        echo "    {$labelOk} {$testName} [{$testTime}s]\n";
+      echo "\n";
+      if ( empty( $this->failed ) ) {
+        echo "  {$labelOk} $suiteName, $nPass / $nTotal passed [{$time}s]\n";
       } else {
-        echo "    {$labelBad} {$testName} [{$testTime}s]\n";
-        foreach ( $test->getConditions() as $cond ) {
-          $condName = $cond->getName();
-          if ( !$cond->isSatisfiedBy( $test ) )
-            echo "      failed: {$condName}\n";
+        echo "  {$labelBad} $suiteName, $nPass / $nTotal passed [{$time}s]\n";
+        foreach ( $this->failed as $failedTest ) {
+          $testName = $failedTest->getName();
+          $result = $failedTest->getResult();
+          $value = (string) $result->getValue();
+          $ex = $result->getException();
+          $time = (string) $result->getTimer();
+          $output = $result->getOutput();
+          $outputStr = $result->getOutput()->get() == "" ?
+            '(none)' :  "$output";
+          
+          echo "    $testName:\n";
+          echo "      value:     $value\n";
+          echo "      exception: $ex\n";
+          echo "      time:      {$time}s\n";
+          echo "      output:    {$outputStr}\n";
+          
+          foreach ( $failedTest->getConditions() as $condition ) {
+            if ( !$failedTest->getResult()->satisfies( $condition ) )
+              echo '      failed:    ' . $condition->getName() . "\n";
+          }
         }
-        echo "      value: {$testVal}\n";
-        echo "      exception: {$testCombinedEx}\n";
       }
-    }
-    
-    public function getSuites () {
-      return $this->suites;
     }
     
     public function allPassed () {
-      return ( $this->totalTestsPassed == $this->totalTestsRun ) &&
-        $this->totalTestsRun > 0;
-    }
-    
-    public function serialize ( $value ) {
-      try {
-        return serialize( $value );
-      } catch ( \Exception $e ) {
-        return "unserializable " . get_class( $value );
-      }
+      return sizeof( $this->passed ) == sizeof( $this->failed );
     }
   
   };

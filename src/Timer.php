@@ -29,8 +29,10 @@
       return number_format ( $this->end - $this->begin, 5 );
     }
     
-    public function elapsed () {
-      return $this->end - $this->begin;
+    public static function measure ( callable $fn ) {
+      $t = (new Timer())->start();
+      call_user_func( $fn );
+      return $t->stop();
     }
   
   };

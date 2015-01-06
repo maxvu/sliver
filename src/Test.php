@@ -8,62 +8,36 @@
     protected $closure;         // closure that performs the test
     protected $conditions;      // list of bound conditions
     
-    protected $value;           // the returned value
-    protected $exception;       // an exception caught during
-    protected $timer;           // run time
+    protected $result;
     
     public function __construct ( $name, callable $closure ) {
       $this->name = $name;
       $this->closure = $closure;
+      $this->result = NULL;
       $this->conditions = array();
-      $this->timer = new Timer();
+      
+      $this->doesNotExcept();
     }
     
     public function run () {
-      if ( isset( $this->value ) || isset( $this->exception ) ) return;
-      $this->timer->start();
+      $timer = (new Timer())->start();
+      ob_start();
       try {
-        $this->value = call_user_func( $this->closure );
-        $this->exception = NULL;
+        $value = call_user_func( $this->closure );
+        $exception = NULL;
       } catch ( \Exception $ex ) {
-        $this->exception = $ex;
+        $exception = $ex;
+        $value = NULL;
       } finally {
-        $this->timer->stop();
+        $timer->stop();
+        $output = ob_get_clean();
       }
-      return $this;
-    }
-    
-    // Apply conditions
-    
-    public function __call ( $name, $args ) {
-      if ( is_callable( '\Sliver\Condition', $name ) )
-        $this->conditions[] = call_user_func_array(
-          "\Sliver\Condition::{$name}", $args
-        );
-      else
-        throw new \Exception( "No Condition {$name}" );
-      return $this;
-    }
-    
-    public function satisfiesCondition ( Condition $cond ) {
-      $c = \Closure::bind( $cond->getClosure(), $this );
-      return call_user_func( $c ) === TRUE;
-    }
-    
-    public function passed () {
-      foreach ( $this->conditions as $cond ) {
-        if ( !$cond->isSatisfiedBy( $this ) )
-          return FALSE;
-      }
-      return TRUE;
-    }
-    
-    // Allow the test to be run() again.
-    
-    public function reset () {
-      unset( $this->value );
-      unset( $this->exception );
-      $this->timer = new Timer();
+      $this->result = new TestResult( 
+        Value::of( $value ), 
+        Value::of( $exception ), 
+        $timer, 
+        Value::of( $output )
+      );
       return $this;
     }
     
@@ -73,28 +47,79 @@
       return $this->name;
     }
     
-    public function getValue () {
-      return isset( $this->value ) ? $this->value : NULL;
-    }
-    
-    public function getException () {
-      return isset( $this->exception ) ? $this->exception : NULL;
-    }
-    
-    public function getExceptionCode () {
-      return isset( $this->exception ) ? $this->exception->getCode() : NULL;
-    }
-    
-    public function getExceptionMessage () {
-      return isset( $this->exception ) ? $this->exception->getMessage() : NULL;
-    }
-    
-    public function getTimer() {
-      return $this->timer;
-    }
-    
     public function getConditions () {
       return $this->conditions;
+    }
+    
+    public function getResult () {
+      return $this->result;
+    }
+    
+    public function passed () {
+      if ( $this->result === NULL ) return FALSE;
+      foreach ( $this->conditions as $cond ) {
+        if ( !$this->result->satisfies( $cond ) )
+          return FALSE;
+      }
+      return TRUE;
+    }
+    
+    // Conditions
+    
+    public function addCondition ( $name, callable $closure ) {
+      return $this->conditions[] = new Condition( $name, $closure );
+    }
+    
+    public function equals ( $x ) {
+      $x = Value::of( $x );
+      $this->addCondition( "returns exactly $x", function () use ( $x ) {
+        return $this->value != NULL && $this->value->get() === $x();
+      });
+      return $this;
+    }
+    
+    public function fuzzyEquals ( $x ) {
+      $x = Value::of( $x );
+      $this->addCondition( "returns fuzzy-equals $x", function () use ( $x ) {
+        return $this->value->get() != NULL && $this->value->get() == $x();
+      });
+      return $this;
+    }
+    
+    public function doesNotEqual ( $x ) {
+      $x = Value::of( $x );
+      $this->addCondition( "return value does not equal $x", function () use ( $x ) {
+        return $this->value->get() != NULL && $this->value->get() != $x();
+      });
+      return $this;
+    }
+    
+    public function excepts () {
+      foreach( $this->conditions as $i => $cond ) {
+        if ( $cond->getName() === "does not throw exception" )
+          unset( $this->conditions[$i] );
+      }
+      $this->addCondition( "throws exception", function () {
+        return $this->exception->get() !== NULL && $this->value->get() === NULL;
+      });
+      return $this;
+    }
+    
+    public function doesNotExcept () {
+      $this->addCondition( "does not throw exception", function () {
+        return $this->exception->get() === NULL;
+      });
+      return $this;
+    }
+    
+    public function takesLessThan ( $secs ) {
+      $this->addCondition(
+        "takes less than $secs seconds to complete",
+        function () use ( $secs ) {
+          return $this->timer->getTime() < $secs;
+        }
+      );
+      return $this;
     }
   
   };
