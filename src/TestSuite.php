@@ -5,7 +5,6 @@
   class TestSuite {
   
     private $tests;
-    private $result;
     private $timer;
     private $assertBuffer;
     
