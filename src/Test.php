@@ -121,6 +121,26 @@
       );
       return $this;
     }
+    
+    public function outputContains ( $text ) {
+      $this->addCondition(
+        "output contains '$text'",
+        function () use ( $text ) {
+          return strpos( $this->output->get(), $text ) !== FALSE;
+        }
+      );
+      return $this;
+    }
+    
+    public function outputStartsWith ( $text ) {
+      $this->addCondition(
+        "output starts with '$text'",
+        function () use ( $text ) {
+          return strpos( $this->output->get(), $text ) === 0;
+        }
+      );
+      return $this;
+    }
   
   };
 

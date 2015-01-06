@@ -89,6 +89,36 @@
         return (new SliverTest( NULL, $fn ))
           ->takesLessThan(0.02)->run()->passed();
       })->equals( FALSE );
+      
+      $this->test( 'outputContains() true on contains', function () {
+        $fn = function () { echo '--HELLO WORLD--'; };
+        return (new SliverTest( NULL, $fn ))
+          ->outputContains('HELLO WORLD')->run()->passed();
+      })->equals( TRUE );
+      
+      $this->test( 'outputContains() true on contains', function () {
+        $fn = function () { echo '--DLROW OLLEH--'; };
+        return (new SliverTest( NULL, $fn ))
+          ->outputContains('HELLO WORLD')->run()->passed();
+      })->equals( FALSE );
+      
+      $this->test( 'outputStartsWith() true on starts with', function () {
+        $fn = function () { echo 'HELLO WORLD'; };
+        return (new SliverTest( NULL, $fn ))
+          ->outputStartsWith('HELLO')->run()->passed();
+      })->equals( TRUE );
+      
+      $this->test( 'outputStartsWith() false on contains', function () {
+        $fn = function () { echo '--HELLO WORLD'; };
+        return (new SliverTest( NULL, $fn ))
+          ->outputStartsWith('HELLO')->run()->passed();
+      })->equals( FALSE );
+      
+      $this->test( 'outputStartsWith() false on does not contain', function () {
+        $fn = function () { echo 'привет всем'; };
+        return (new SliverTest( NULL, $fn ))
+          ->outputStartsWith('HELLO')->run()->passed();
+      })->equals( FALSE );
     
     }
   
