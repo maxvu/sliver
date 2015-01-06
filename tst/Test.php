@@ -119,6 +119,18 @@
         return (new SliverTest( NULL, $fn ))
           ->outputStartsWith('HELLO')->run()->passed();
       })->equals( FALSE );
+      
+      $this->test( 'outputDoesNotContain() true on does not contain', function () {
+        $fn = function () { echo 'привет всем'; };
+        return (new SliverTest( NULL, $fn ))
+          ->outputDoesNotContain('HELLO')->run()->passed();
+      })->equals( TRUE );
+      
+      $this->test( 'outputDoesNotContain() false on contains', function () {
+        $fn = function () { echo 'привет всем'; };
+        return (new SliverTest( NULL, $fn ))
+          ->outputDoesNotContain('привет')->run()->passed();
+      })->equals( FALSE );
     
     }
   

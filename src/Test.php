@@ -132,6 +132,16 @@
       return $this;
     }
     
+    public function outputDoesNotContain ( $text ) {
+      $this->addCondition(
+        "output does not contain '$text'",
+        function () use ( $text ) {
+          return strpos( $this->output->get(), $text ) === FALSE;
+        }
+      );
+      return $this;
+    }
+    
     public function outputStartsWith ( $text ) {
       $this->addCondition(
         "output starts with '$text'",
