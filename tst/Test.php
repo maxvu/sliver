@@ -7,6 +7,26 @@
   
     public function define () {
     
+      $this->test( 'result value is passed', function () {
+        $fn = function () { return 1 + 1; };
+        return (new SliverTest( NULL, $fn ))
+          ->equals(2)->run()->getResult()->getValue();
+      })->equals( 2 );
+      
+      $this->test( 'result exception is passed', function () {
+        $fn = function () { throw new \Exception( "TEST EXCEPTION", 7 ); };
+        $ex = (new SliverTest( NULL, $fn ))
+          ->equals(2)->run()->getResult()->getException()->get();
+        $this->assertEquals($ex->getCode(), 7);
+        $this->assertEquals($ex->getMessage(), "TEST EXCEPTION");
+      });
+      
+      $this->test( 'result output is captured', function () {
+        $fn = function () { echo "HELLO WORLD"; };
+        return (new SliverTest( NULL, $fn ))
+          ->equals(2)->run()->getResult()->getOutput()->get();
+      })->equals("HELLO WORLD");
+    
       $this->test( 'equals() true when equal', function () {
         $fn = function () { return 1 + 1; };
         return (new SliverTest( NULL, $fn ))

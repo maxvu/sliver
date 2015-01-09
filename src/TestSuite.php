@@ -12,6 +12,9 @@
       $this->tests = array();
       $this->result = NULL;
       $this->assertBuffer = array();
+      
+      // collect test definitions
+      $this->define();
     }
     
     public function getTests () {
@@ -27,9 +30,6 @@
     }
     
     public function run () {
-      // collect test definitions
-      $this->define();
-      
       $this->timer = (new Timer())->start();
       if ( method_exists( $this, 'beforeAll' ) ) $this->beforeAll();
       foreach ( $this->tests as $test ) {
@@ -42,6 +42,7 @@
       }
       if ( method_exists( $this, 'afterAll' ) ) $this->afterAll();
       $this->timer->stop();
+      return new TestSuiteResult( $this->tests, $this->timer );
     }
     
     public function assert ( $description, $assertion ) {

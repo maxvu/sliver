@@ -43,26 +43,70 @@
   }
   
   /*
-    Instantiate, enumerate, filter to subclasses of \Sliver\TestSuite.
+    Collect and run().
   */
   
-  $controller = new \Sliver\ConsoleTestController();
+  $suites = array();
+  $allPassed = TRUE;
+  $labelOk = "[ \e[0;32mOK\033[0m ]";
+  $labelBad = "[ \e[1;31m!!\033[0m ]";
   
-  foreach ( get_declared_classes() as $class ) {
-    try {
-      if ( is_subclass_of( $class, '\Sliver\TestSuite' ) )
-        $controller->addSuite(new $class());
-    } catch ( Exception $e ) {
-      echo "Exception caught when adding testsuite class $class:\n\t";
-      echo $e->getMessage() . "\n";
-      exit(1);
+  function displaySuite ( $suite, $result ) {
+    $suiteName = get_class( $suite );
+    $nTests = $result->numTests();
+    $nTestsPassed = $result->numTestsPassed();
+    $nConditions = $result->numConditions();
+    $nConditionsPassed = $result->numConditionsPassed();
+    $time = $result->getTimer();
+    $labelOk = "[ \e[0;32mOK\033[0m ]";
+    $labelBad = "[ \e[1;31m!!\033[0m ]";
+    
+    if ( $nConditions === $nConditionsPassed ) {
+      echo "  $labelOk $suiteName, $nTestsPassed / $nTests passed in [{$time}s]\n";
+    } else {
+      echo "  $labelBad $suiteName, $nTestsPassed / $nTests passed [{$time}s]\n";
+      foreach ( $suite->getTests() as $test ) {
+        if ( !$test->passed() )
+          displayFailedTest( $test );
+      }
     }
   }
   
-  /*
-    Run and exit().
-  */
+  function displayFailedTest ( $test ) {
+    $name = $test->getName();
+    $result = $test->getResult();
+    $value = $result->getValue();
+    $ex = $result->getException();
+    $time = $result->getTimer();
+    $output = $result->getOutput();
+    $outputStr = empty( $result->getOutput()->get() ) ?
+      '(none)' :  "$output";
+    
+    echo "    $name:\n";
+    echo "      value:     $value\n";
+    echo "      exception: $ex\n";
+    echo "      time:      {$time}s\n";
+    echo "      output:    $outputStr\n";
+    
+    foreach ( $test->getConditions() as $condition ) {
+      if ( !$test->getResult()->satisfies( $condition ) )
+        echo '      failed:    ' . $condition->getName() . "\n";
+    }
+  }
+  
+  foreach ( get_declared_classes() as $class )
+    if ( is_subclass_of( $class, '\Sliver\TestSuite' ) )
+      $suites[$class] = new $class();
+  
+  echo "\n";
+  foreach ( $suites as $suite ) {
+    $result = $suite->run();
+    if ( !$result->allPassed() )
+      $allPassed = FALSE;
+     displaySuite( $suite, $result );
+  }
+  echo "\n";
 
-  exit( $controller->run()->allPassed() ? 0 : 1 );
+  exit( $allPassed ? 0 : 1 );
   
 ?>
