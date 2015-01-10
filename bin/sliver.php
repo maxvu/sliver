@@ -47,7 +47,8 @@
   */
   
   $suites = array();
-  $allPassed = TRUE;
+  $timer = new \Sliver\Timer();
+  
   $labelOk = "[ \e[0;32mOK\033[0m ]";
   $labelBad = "[ \e[1;31m!!\033[0m ]";
   
@@ -99,14 +100,37 @@
       $suites[$class] = new $class();
   
   echo "\n";
+  $timer->start();
   foreach ( $suites as $suite ) {
     $result = $suite->run();
-    if ( !$result->allPassed() )
-      $allPassed = FALSE;
-     displaySuite( $suite, $result );
+    displaySuite( $suite, $result );
   }
+  $timer->stop();
   echo "\n";
+  
+  /*
+    Compute aggregate figures
+  */
+  
+  $nTests = 0;
+  $nTestsPassed = 0;
+  $nConditions = 0;
+  $nConditionsPassed = 0;
+  
+  foreach ( $suites as $suite ) {
+    foreach ( $suite->getTests() as $test ) {
+      $nTests++;
+      foreach( $test->getConditions() as $cond ) {
+        $nConditions++;
+        if ( $test->getResult()->satisfies( $cond ) ) $nConditionsPassed++;
+      }
+      if ( $test->passed() ) $nTestsPassed++;
+    }
+  }
+  
+  echo "  $nTestsPassed / $nTests tests ( $nConditionsPassed / $nConditions "
+    . "conditions ) passed in [{$timer}s]\n\n";
 
-  exit( $allPassed ? 0 : 1 );
+  exit( $nTestsPassed === $nTests ? 0 : 1 );
   
 ?>
