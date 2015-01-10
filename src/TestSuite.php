@@ -4,9 +4,14 @@
 
   class TestSuite {
   
-    private $tests;
-    private $timer;
-    private $assertBuffer;
+    protected $tests;
+    protected $timer;
+    protected $assertBuffer;
+    
+    protected $__beforeAll;
+    protected $__afterAll;
+    protected $__beforeEach;
+    protected $__afterEach;
     
     public function __construct () {
       $this->tests = array();
@@ -15,6 +20,15 @@
       
       // collect test definitions
       $this->define();
+      
+      $this->__beforeAll = method_exists( $this, 'beforeAll' ) ?
+        function () { $this->beforeAll(); } : function () {};
+      $this->__afterAll = method_exists( $this, 'afterAll' ) ?
+        function () { $this->afterAll(); } : function () {};
+      $this->__beforeEach = method_exists( $this, 'beforeEach' ) ?
+        function () { $this->beforeEach(); } : function () {};
+      $this->__afterEach = method_exists( $this, 'afterEach' ) ?
+        function () { $this->afterEach(); } : function () {};
     }
     
     public function getTests () {
@@ -31,16 +45,16 @@
     
     public function run () {
       $this->timer = (new Timer())->start();
-      if ( method_exists( $this, 'beforeAll' ) ) $this->beforeAll();
+      call_user_func( $this->__beforeAll->bindTo( $this ) );
       foreach ( $this->tests as $test ) {
-        if ( method_exists( $this, 'beforeEach' ) ) $this->beforeEach();
+        call_user_func( $this->__beforeEach->bindTo( $this ) );
         $test->run();
         foreach ( $this->assertBuffer as $assert )
           $test->addCondition( $assert->getName(), $assert->getClosure() );
         $this->assertBuffer = array();
-        if ( method_exists( $this, 'afterEach' ) ) $this->afterEach();
+        call_user_func( $this->__afterEach->bindTo( $this ) );
       }
-      if ( method_exists( $this, 'afterAll' ) ) $this->afterAll();
+      call_user_func( $this->__afterAll->bindTo( $this ) );
       $this->timer->stop();
       return new TestSuiteResult( $this->tests, $this->timer );
     }
