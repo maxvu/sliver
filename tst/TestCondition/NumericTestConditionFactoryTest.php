@@ -1,6 +1,6 @@
 <?php
 
-  namespace Sliver\Tests\Test;
+  namespace Sliver\Tests\TestCondition;
   use Sliver\Test\Test;
   use Sliver\TestCondition\TestCondition;
   use Sliver\TestCondition\ExceptionTestCondition;
