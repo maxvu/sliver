@@ -54,7 +54,9 @@
       $runner = new CommandLineRunner( $verbosity, $writer );
       foreach ( $testFiles as $target )
         include_once ( $target );
-      foreach ( get_declared_classes() as $class ) {
+      $allClasses = get_declared_classes();
+      sort( $allClasses );
+      foreach ( $allClasses as $class ) {
         $reflector = new ReflectionClass( $class );
         if ( $reflector->isSubclassOf( static::$sliverTestSuite ) )
           $runner->addTestSuite( $class );
