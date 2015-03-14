@@ -35,6 +35,10 @@
       return NULL;
     }
     
+    public function getMethods () {
+      return $this->methods;
+    }
+    
     public function hasMethod ( $name ) {
       return isset( $this->methods[$name] );
     }
@@ -42,6 +46,10 @@
     public function setMember ( $name, $value ) {
       $this->members[$name] = $value;
       return $this;
+    }
+    
+    public function getMembers () {
+      return $this->members;
     }
     
     public function hasMember ( $name ) {

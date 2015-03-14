@@ -26,6 +26,7 @@
     
     public function addTest ( $name, $closure ) {
       $this->tests[$name] = new Test( $name, $closure->bindTo( $this->suite ) );
+      return $this;
     }
 
     public function run () {

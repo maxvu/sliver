@@ -4,6 +4,18 @@
   use Sliver\Utility\String;
   
   class ArrayTestConditionFactory extends TestConditionFactory {
+    
+    // Strict equality for array means exact order. Relax it for arrays.
+    public function equalTo ( $other ) {
+      $value = $this->value;
+      $this->test->addCondition( new TestCondition(
+        String::serialize( $value ) . ' == ' . String::serialize( $other ),
+        function ( $result ) use ( $value, $other ) {
+          return $value == $other;
+        }
+      ));
+      return $this;
+    }
 
     public function contains ( $other ) {
       $value = $this->value;
@@ -63,6 +75,14 @@
     
     public function isEmpty () {
       return $this->isSize( 0 );
+    }
+    
+    public function len ( $len ) {
+        return $this->isSize( $len );
+    }
+    
+    public function length ( $len ) {
+      return $this->isSize( $len );
     }
 
   };
