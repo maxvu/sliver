@@ -108,3 +108,68 @@ Here, `true()` produces a condition that requires the result of `$thing->has( "H
 ```
 
 All the asserts are chainable, are applied to the test they're contained in as a condition and are listed in test output by the order they appear in the test.
+
+## Special conditions
+
+For situations where it would be more convenient to apply conditions to the test, rather than the result of a constructed closure, there are a few special conditions that do not apply to a value and do not use `assert()`:
+
+```
+	shouldThrowException ( $msg = NULL, $code = NULL )
+	shouldTakeLessThan ( $secs )
+    shouldReturn ( $value )
+    shouldOutput ( $txt )
+```
+
+Note that `shouldThrowException` should be declared before the exception is thrown.
+
+## Spies
+
+Use spies to simulate and verify behavior of arbitrary classes. To instantiate, use the `spy( $className, $ctorArgs = NULL )` method with `$className` being the namespaced class and `$ctorArgs` being an array of arguments to pass to the constructor (pass `NULL` to create without invoking its constructor).
+
+```php
+<?php
+	public function someOtherTest () {
+    	$counter = $this->spy( 'MyApp\Counter' );
+    }
+```
+
+Treat the spy as any object of that type, but share public access to its private members and functions:
+
+```php
+<?php
+	public function someOtherTest () {
+    	$counter = $this->spy( 'MyApp\Counter', array( 0 ) );
+        $counter->inc()->inc();
+        echo $counter->getCount(); // 2
+        $counter->count = 0;
+        echo $counter->getCount(); // 0
+    }
+```
+
+Use the `summon()` command to get access to the spy's controller, from which you can replace any instance method with the `stub( $fn_name, $closure )` method:
+
+```php
+<?php
+	public function someOtherTest () {
+    	$counter = $this->spy( 'MyApp\Counter', array( 0 ) );
+        $counter->summon()->stub( 'inc', function () { $this->count += 10; } );
+        $counter->inc();
+        echo $counter->getCount(); // 10
+    }
+```
+
+## Caveats and Known Limitations
+
+#### Detection
+  * Test class files must have a `.php` extension.
+  * Test class files must contain, somewhere in, the partial namespace `Sliver\TestSuite`.
+  * Test class files must be contained in some descendent folder of one mentioned in `autoload-dev`.
+  
+
+#### Tests
+  * Tests may not use methods named `assert`, `spy`, or any shared in the Special Conditions above.
+  
+
+#### Spies
+  * Spies will not obey static calls. You may not call static functions on the instance and member functions using `self::` or `static::` scoping will not resolve.
+  * Spies (probably) do not recognize class constants.
