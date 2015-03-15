@@ -69,3 +69,42 @@ use \MyApp\SampleClass;
         [ !! ] 7 / 8 conditions, 1 / 2 tests and 0 / 1 suites passed
 ```
 
+## Asserts
+
+Use sliver's `assert()` vocabulary to define test criteria. `assert( $x )` is available by class extension and produces a handle to a generator that applies conditions to the current test.
+```php
+<?php
+public function someTest () {
+	$thing = new MyApp\Box();
+    $thing->value = "HELLO";
+    $this->assert( $thing->has( "HELLO" ) )->true();
+}
+```
+Here, `true()` produces a condition that requires the result of `$thing->has( "HELLO" )` to equal true. Here are a list of available conditions:
+
+```
+	Generically
+    	eq( $y ), equals( $y )          $x === $y
+        ne( $y ), notEquals( $y )       $x != $y
+        null(), isNull()				$x === NULL
+        true()                          $x === TRUE
+        false()                         $x === FALSE
+    Arrays
+        eq( $y )                        $x == $y [$x and $y share K/V mapping]
+        has( $el ), contains( $el )     in_array( $el, $x )
+        hasNot( $el )                   !in_array( $el, $x )
+        hasKey( $k )                    array_has_key( $k, $x )
+        size( $n ), len( $n ),
+          length( $n )                  sizeof( $x ) === $n
+    Strings
+    	len( $n ), size( $n )           strlen( $x ) === $n
+        contains( $substr )             strpos( $x, $substr ) !== FALSE
+        matches( $pattern )             preg_match( $pattern, $x ) !== FALSE
+    Numeric
+    	gt( $y )                        $x > $y
+        ge( $y ), gte( $y )             $x >= $y
+    	lt( $y )                        $x < $y
+        le( $y ), lte( $y )             $x <= $y
+```
+
+All the asserts are chainable, are applied to the test they're contained in as a condition and are listed in test output by the order they appear in the test.
