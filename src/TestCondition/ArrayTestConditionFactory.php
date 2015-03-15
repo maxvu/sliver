@@ -47,6 +47,10 @@
       return $this;
     }
     
+    public function hasNot ( $other ) {
+      return $this->doesNotContain( $other );
+    }
+    
     public function hasKey ( $key ) {
       $value = $this->value;
       $this->test->addCondition( new TestCondition(

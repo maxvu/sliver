@@ -81,6 +81,18 @@
         })
       )->eq( FALSE );
       
+      $this->assert(
+        $this->applyAssert( $odds, function ( $f ) {
+          $f->hasNot( 99 );
+        })
+      )->eq( FALSE );
+      
+      $this->assert(
+        $this->applyAssert( $odds, function ( $f ) {
+          $f->hasNot( 122 );
+        })
+      )->eq( TRUE );
+      
     }
     
     public function hasKey () {
