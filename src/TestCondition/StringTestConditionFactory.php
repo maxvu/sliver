@@ -49,6 +49,17 @@
       return $this->hasSubstring( $substr );
     }
     
+    public function matches ( $pattern ) {
+      $value = $this->value;
+      $this->test->addCondition( new TestCondition(
+        String::serialize( $value ) . " matches pattern $pattern",
+        function ( $result ) use ( $value, $pattern ) {
+          return preg_match( $pattern, $value ) === 1;
+        }
+      ));
+      return $this;
+    }
+    
   };
   
 ?>

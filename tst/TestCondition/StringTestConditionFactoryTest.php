@@ -75,6 +75,22 @@
       )->eq( TRUE );
       
     }
+    
+    public function matches () {
+      
+      $this->assert(
+        $this->applyAssert( '000-0001', function ( $f ) {
+          $f->matches( '/^\d{3}-\d{4}$/' );
+        })
+      )->eq( TRUE );
+      
+      $this->assert(
+        $this->applyAssert( '!!!', function ( $f ) {
+          $f->matches( '/^\d{3}-\d{4}$/' );
+        })
+      )->eq( FALSE );
+      
+    }
   
   }
   
