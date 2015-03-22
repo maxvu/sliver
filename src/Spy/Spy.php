@@ -9,29 +9,46 @@
     public $__controller;
      
     public function __call ( $name, $args ) {
-      if ( !$this->__controller->hasMethod( $name ) )
+      $hasExact = $this->__controller->hasMethod( $name );
+      $hasMagic = $this->__controller->hasMethod( '__call' );
+      if ( $hasExact ) {
+        $this->__controller->recordCall( $name, $args );
+        $fn = $this->__controller->getMethod( $name )->bindTo( $this );
+        return call_user_func_array( $fn, $args );
+      } else if ( $hasMagic ) {
+        return $this->__call( '__call', [ $name, $args ] );
+      } else {
         throw new InvalidArgumentException( "Spy: no method '$name'" );
-      $this->__controller->recordCall( $name, $args );
-      $fn = $this->__controller->getMethod( $name )->bindTo( $this );
-      return call_user_func_array( $fn, $args );
+      }
     }
     
     public function __set ( $name, $value ) {
-      $this->__controller->setMember( $name, $value );
+      if ( $this->__controller->hasMethod( '__set' ) )
+        return $this->__call( '__set', [ $name, $value ] );
+      else
+        $this->__controller->setMember( $name, $value );
     }
     
     public function __get ( $name ) {
-      if ( !$this->__controller->hasMember( $name ) )
-        throw new InvalidArgumentException( "Spy: no member '$name'" );
-      return $this->__controller->getMember( $name );
+      if ( $this->__controller->hasMethod( '__get' ) )
+        return $this->__call( '__get', $name );
+      if ( $this->__controller->hasMember( $name ) )
+        return $this->__controller->getMember( $name );
+      throw new InvalidArgumentException( "Spy: no member '$name'" );
     }
     
     public function __unset ( $name ) {
-      $this->__controller->unsetMember( $name );
+      if ( $this->__controller->hasMethod( '__unset' ) )
+        $this->__call( '__unset', [ $name ] );
+      else
+        $this->__controller->unsetMember( $name );
     }
     
     public function __isset ( $name ) {
-      return $this->__controller->hasMember( $name );
+      if ( $this->__controller->hasMethod( '__isset' ) )
+        return $this->__call( '__isset', [ $name ] );
+      else
+        return $this->__controller->hasMember( $name );
     }
     
     public function summon () {

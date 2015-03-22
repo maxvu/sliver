@@ -21,6 +21,14 @@
     public function __construct ( $x ) { $this->x = $x; }
     private function inc () { $this->x++; return $this; }
   }
+  
+  class Shell {
+    public function __call ( $name, $args ) { return $name; }
+    public function __set ( $name, $value ) { $this->{$name} = strrev( $value ); }
+    public function __get ( $name ) { return $this->{$name}; }
+    public function __isset( $name ) { return isset( $this->{$name} ); }
+    public function __unset( $name ) { unset( $this->{$name} ); }
+  }
 
   class SpyTest extends \Sliver\TestSuite\TestSuite {
     
@@ -72,6 +80,21 @@
       $this->assert( isset( $spy->otherValue ) )->true();
       unset( $spy->otherValue );
       $this->assert( isset( $spy->otherValue ) )->false();
+    }
+    
+    public function percolatesMagicMethodCallsDownward () {
+      $shell = $this->spy( 'Sliver\Tests\Spy\Shell' );
+      
+      $this->assert( isset( $shell->dne ) )->false();
+      
+      $shell->twenty = 'ytnewt';
+      $this->assert( isset( $shell->twenty ) )->true();
+      $this->assert( $shell->twenty )->eq( 'twenty' );
+      unset( $shell->twenty );
+      $this->assert( isset( $shell->twenty ) )->false();
+      
+      $this->assert( $shell->someMethod() )->eq( 'someMethod' );
+      
     }
     
   };
