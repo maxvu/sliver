@@ -100,7 +100,7 @@
       
       foreach ( $tests as $i => $test )
         $this->assert( $test->run()->expectsException() )->eq( $results[$i] );
-      echo "MELROSE " . sizeof( $this->__currentTest->getConditions() ) . "\n";
+      echo "MELROSE " , sizeof( $this->__currentTest->getConditions() ) , "\n";
     }
     
   };
