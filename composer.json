@@ -18,15 +18,7 @@
     },
     "autoload": {
       "psr-4": {
-        "Sliver\\": "src/"
+        "maxvu\\sliver\\": "src/"
       }
-    },
-    "autoload-dev": {
-      "psr-4": {
-        "Sliver\\Tests\\": "tst/"
-      }
-    },
-    "scripts" : {
-      "sliver" : ["Sliver\\Sliver::run"]
     }
 }
